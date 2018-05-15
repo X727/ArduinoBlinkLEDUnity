@@ -15,11 +15,14 @@ void loop() {
   if(Serial.available()){
     if(SYNC == Serial.read()){
       ledOn = !ledOn;
+      //Serial.println("Sync Rx");
       if(ledOn){
         digitalWrite(LED_PIN, HIGH);
+        //Serial.println("LED On");
       }
       else{
         digitalWrite(LED_PIN, LOW);
+        //Serial.println("Led Off");
       }
     }
   }
