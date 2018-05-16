@@ -1,5 +1,5 @@
 #define SYNC 0x28
-#define BAUD_RATE 9600
+#define BAUD_RATE 115200
 #define LED_PIN 13
 
 bool ledOn;
