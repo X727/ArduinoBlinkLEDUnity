@@ -21,8 +21,9 @@ public class ButtonFunctionality : MonoBehaviour
 		previousState = false;
 		LedState = false;
 		port = "/dev/cu.usbmodem1411";		//Set our port
-		message = new char[1];
+		message = new char[2];
 		message [0] = sync;		//Build our message
+		message [1] = boolToChar(LedState);
 
 		serialPort = new SerialPort (port, baudRate);
 		try {
@@ -46,6 +47,8 @@ public class ButtonFunctionality : MonoBehaviour
 	public void ButtonClickFunction ()
 	{
 		LedState = !LedState;
+		message [1] = boolToChar(LedState);
+
 	}
 
 	private void writeMessage ()
@@ -66,6 +69,15 @@ public class ButtonFunctionality : MonoBehaviour
 			Debug.Log ("Button clicked. LED On.");
 		} else {
 			Debug.Log ("Button clicked. LED Off.");
+		}
+	}
+
+	private char boolToChar( bool val){
+
+		if (val) {
+			return '1';
+		} else {
+			return '0';
 		}
 	}
 
