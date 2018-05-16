@@ -3,6 +3,7 @@
 #define LED_PIN 13
 
 bool ledOn;
+char msg[2];
 
 void setup() {
   pinMode(LED_PIN, OUTPUT);
@@ -12,19 +13,38 @@ void setup() {
 }
 
 void loop() {
-  if(Serial.available()){
-    if(SYNC == Serial.read()){
-      ledOn = !ledOn;
-      //Serial.println("Sync Rx");
-      if(ledOn){
-        digitalWrite(LED_PIN, HIGH);
-        //Serial.println("LED On");
-      }
-      else{
-        digitalWrite(LED_PIN, LOW);
-        //Serial.println("Led Off");
-      }
+  if (Serial.available()) {
+    Serial.readBytes(msg, 2);
+    if (msg[0] == SYNC) {
+      setLedState();
+      writeLedState();
     }
   }
-
 }
+
+void setLedState() {
+
+  switch (msg[1]) {
+    case '0':
+      ledOn = false;
+      break;
+    case '1':
+      ledOn = true;
+      break;
+    default:
+      Serial.println("Error case. No LED state change.");
+  }
+}
+
+void writeLedState() {
+  if (ledOn) {
+    digitalWrite(LED_PIN, HIGH);
+    //Serial.println("LED On");
+  }
+  else {
+    digitalWrite(LED_PIN, LOW);
+    //Serial.println("Led Off");
+  }
+}
+
+
