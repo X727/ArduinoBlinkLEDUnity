@@ -10,6 +10,7 @@ using System;
 using System.IO;
 using System.IO.Ports;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ButtonFunctionality : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class ButtonFunctionality : MonoBehaviour
 	private char sync = Convert.ToChar (0x28);		//Synchronization character to avoid reading noise as a valid message.
 	private char[] message;							//Container for message to send via Serial port.
 	private static SerialPort serialPort;			//Serial port object.
+	List<string> availableSerialPorts = new List<string> ();
+	public Dropdown dropDown;
 
 	// Use this for initialization
 	void Start ()
@@ -27,21 +30,22 @@ public class ButtonFunctionality : MonoBehaviour
 		//Initialize variables.
 		previousState = false;
 		LedState = false;
-		port = "/dev/cu.usbmodem1411";		//Set our port. Should come from a drop-down rather than hardcoded.
+		getAvailableSerialPorts ();
+
+
+		dropDown.ClearOptions ();
+
+		if (availableSerialPorts != null && dropDown != null) {
+			dropDown.AddOptions (availableSerialPorts);
+		}else {
+			Debug.LogWarning ("Can't add list.");
+		}
+
+		port = "Default";		//Set our port. Should come from a drop-down rather than hardcoded.
 		message = new char[2];
 		message [0] = sync;		
 		message [1] = boolToChar(LedState);
 
-		//Create the serial port object
-		serialPort = new SerialPort (port, baudRate);
-		//Try to open it and catch any exceptions.
-		try {
-			serialPort.Open ();
-		} catch (IOException ex) {
-			Debug.Log ("Unable to open port " + ex.ToString ());
-		} catch (Exception ex) {
-			Debug.LogError (ex);
-		}
 	}
 
 	// Update is called once per frame
@@ -96,6 +100,39 @@ public class ButtonFunctionality : MonoBehaviour
 		} else {
 			return '0';
 		}
+	}
+
+	private void getAvailableSerialPorts ()
+	{
+		string[] ports = Directory.GetFiles ("/dev/");
+		availableSerialPorts.Add("Select an available serial port: ");
+		foreach (string port in ports) {
+			if (port.StartsWith ("/dev/cu.")) {
+				availableSerialPorts.Add (port);
+			}
+		}
+	}
+
+	void openSerialPort ()
+	{
+		//Create the serial port object
+		serialPort = new SerialPort (port, baudRate);
+		//Try to open it and catch any exceptions.
+		try {
+			serialPort.Open ();
+		}
+		catch (IOException ex) {
+			Debug.Log ("Unable to open port " + ex.ToString ());
+		}
+		catch (Exception ex) {
+			Debug.LogError (ex);
+		}
+	}
+
+	public void dropdownValueChange(){
+		port = availableSerialPorts[dropDown.value];
+		openSerialPort ();
+		
 	}
 
 	//The led state as a property of the class. 
