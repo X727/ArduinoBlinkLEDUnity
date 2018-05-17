@@ -64,7 +64,9 @@ public class ButtonFunctionality : MonoBehaviour
 		}
 	}
 
-	//Function called when the button is clicked. 
+	//EVENT HANDLERS
+
+	//Event handler called when the button is clicked. 
 	//Changes the ledState and updates the message.
 	public void ButtonClickFunction ()
 	{
@@ -73,46 +75,12 @@ public class ButtonFunctionality : MonoBehaviour
 
 	}
 
-	//Function that writes the updated message to the serial port.
-	private void writeMessage ()
-	{
-		//Tries to write the message if the serial port exists and is open
-		try {
-			if (serialPort != null && serialPort.IsOpen) {
-				serialPort.Write (message, 0, message.Length);
-			}
-
-		} catch (InvalidOperationException ex) {
-			Debug.LogError ("Port is not open" + ex.ToString ());
-		} catch (Exception ex) {
-			Debug.LogError (ex);
-		}
-			
+	//Event handler for when a new option from the dropdown is selected.
+	public void dropdownValueChange(){
+		dropdownSelected = true;
 	}
 
-	//Changes the text and color of button based on ledState. Improves user feedback.
-	void buttonTextChange ()
-	{
-		if (ledState) {
-			ledButton.GetComponentInChildren<Text> ().text = "Led On";
-			ledButton.GetComponentInChildren<Text> ().color = triadicGreen;
-		}
-		else {
-			ledButton.GetComponentInChildren<Text> ().text = "Led Off";
-			ledButton.GetComponentInChildren<Text> ().color = UnityEngine.Color.red;
-		}
-	}
-
-	//Function that converts the boolean state to a character. 
-	//Written because this sort of conversion is unsupported natively in C#.
-	private char boolToChar( bool val){
-
-		if (val) {
-			return '1';
-		} else {
-			return '0';
-		}
-	}
+	//SERIAL PORT METHODS
 
 	//Gets the available serial port names on MacOS and writes them to a list.
 	private void getAvailableSerialPorts ()
@@ -133,7 +101,7 @@ public class ButtonFunctionality : MonoBehaviour
 	}
 
 	//Creates and opens the serial port for communications
-	void openSerialPort ()
+	private void openSerialPort ()
 	{
 		//Checks if a serial port already exists and is open. If yes, closes the connection and disposes the object.
 		if (serialPort!=null) {
@@ -156,13 +124,56 @@ public class ButtonFunctionality : MonoBehaviour
 		}
 	}
 
-	//Event handler for when a new option from the dropdown is selected.
-	public void dropdownValueChange(){
-		dropdownSelected = true;
+
+	//Function that writes the updated message to the serial port.
+	private void writeMessage ()
+	{
+		//Tries to write the message if the serial port exists and is open
+		try {
+			if (serialPort != null && serialPort.IsOpen) {
+				serialPort.Write (message, 0, message.Length);
+			}
+
+		} catch (InvalidOperationException ex) {
+			Debug.LogError ("Port is not open" + ex.ToString ());
+		} catch (Exception ex) {
+			Debug.LogError (ex);
+		}
+			
 	}
 
+	//BUTTON METHODS
+
+	//Changes the text and color of button based on ledState. Improves user feedback.
+	private void buttonTextChange ()
+	{
+		if (ledState) {
+			ledButton.GetComponentInChildren<Text> ().text = "Led On";
+			ledButton.GetComponentInChildren<Text> ().color = triadicGreen;
+		}
+		else {
+			ledButton.GetComponentInChildren<Text> ().text = "Led Off";
+			ledButton.GetComponentInChildren<Text> ().color = UnityEngine.Color.red;
+		}
+	}
+
+	//UTILITY METHODS
+
+	//Function that converts the boolean state to a character. 
+	//Written because this sort of conversion is unsupported natively in C#.
+	private char boolToChar( bool val){
+
+		if (val) {
+			return '1';
+		} else {
+			return '0';
+		}
+	}
+
+	//DROPDOWN METHODS
+
 	//Clears the existing options in the dropdown and populates with the available options.
-	void populateDropdown ()
+	private void populateDropdown ()
 	{
 		dropDown.ClearOptions();
 		if (dropdownOptions != null && dropDown != null) {
@@ -174,7 +185,7 @@ public class ButtonFunctionality : MonoBehaviour
 	}
 
 	//Populates the dropdown with valid options.
-	void refreshDropdown ()
+	private void refreshDropdown ()
 	{
 		//Gets string list of available ports on MacOS
 		getAvailableSerialPorts ();
@@ -185,7 +196,7 @@ public class ButtonFunctionality : MonoBehaviour
 	}
 
 	//Checks the new dropdown value and refreshes the list or opens a serial port.
-	void dropdownOptionSelector ()
+	private void dropdownOptionSelector ()
 	{
 		if (dropDown.value == 0) { //default message to user and should not be selected.
 			ledButton.interactable = false;
