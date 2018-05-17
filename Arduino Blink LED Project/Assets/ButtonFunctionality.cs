@@ -106,10 +106,14 @@ public class ButtonFunctionality : MonoBehaviour
 	//Gets the available serial port names on MacOS and writes them to a list.
 	private void getAvailableSerialPorts ()
 	{
+		//Get file names in /dev/ folder of MacOs
 		string[] ports = Directory.GetFiles ("/dev/");
+		//Clear any existing options in the dropdown
 		dropdownOptions.Clear ();
-		dropdownOptions.Add("Select an available serial port: ");
-		dropdownOptions.Add ("Refresh List.");
+		//Adds default text for user and a refresh list option.
+		dropdownOptions.Add("Select an available serial port... ");
+		dropdownOptions.Add ("Refresh List");
+		//Adds each valid serial port name.
 		foreach (string port in ports) {
 			if (port.StartsWith ("/dev/cu.")) {
 				dropdownOptions.Add (port);
@@ -120,7 +124,13 @@ public class ButtonFunctionality : MonoBehaviour
 	//Creates and opens the serial port for communications
 	void openSerialPort ()
 	{
-		
+		//Checks if a serial port already exists and is open. If yes, closes the connection and disposes the object.
+		if (serialPort!=null) {
+			if (serialPort.IsOpen) { //Written nested because this will throw NullPointerException if it hasn't been created.
+				serialPort.Close ();
+				serialPort.Dispose ();
+			}
+		}
 		//Create the serial port object
 		serialPort = new SerialPort (port, baudRate);
 		//Try to open it and catch any exceptions.
@@ -135,7 +145,7 @@ public class ButtonFunctionality : MonoBehaviour
 		}
 	}
 
-	//Sets the port name and toggles the button interactibility when a port is chosen.
+	//Event handler for when a new option from the dropdown is selected.
 	public void dropdownValueChange(){
 		dropdownSelected = true;
 	}
@@ -152,6 +162,7 @@ public class ButtonFunctionality : MonoBehaviour
 		}
 	}
 
+	//Populates the dropdown with valid options.
 	void refreshDropdown ()
 	{
 		//Gets string list of available ports on MacOS
@@ -162,14 +173,14 @@ public class ButtonFunctionality : MonoBehaviour
 		ledButton.interactable = false;
 	}
 
+	//Checks the new dropdown value and refreshes the list or opens a serial port.
 	void dropdownOptionSelector ()
 	{
-		if (dropDown.value == 0) {
+		if (dropDown.value == 0) { //default message to user and should not be selected.
 			ledButton.interactable = false;
 			Debug.LogWarning ("Invalid port name.");
 		}
-		else
-			if (dropDown.value == 1) {
+		else if (dropDown.value == 1) {
 				refreshDropdown ();
 				Debug.Log ("List Refreshed.");
 			}
