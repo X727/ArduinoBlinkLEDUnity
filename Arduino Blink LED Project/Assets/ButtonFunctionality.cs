@@ -22,7 +22,8 @@ public class ButtonFunctionality : MonoBehaviour
 	private char sync = Convert.ToChar (0x28);		//Synchronization character to avoid reading noise as a valid message.
 	private char[] message;							//Container for message to send via Serial port.
 	private static SerialPort serialPort;			//Serial port object.
-	List<string> availableSerialPorts = new List<string> ();//Container for the available serial port names.
+	List<string> dropdownOptions = new List<string> ();//Container for the dropdown options.
+	private bool dropdownSelected;					//Whether an option has been recently selected from the dropdown.
 	public Dropdown dropDown;						//Dropdown from the GUI.
 	public Button ledButton;						//Button from the GUI.
 
@@ -33,10 +34,9 @@ public class ButtonFunctionality : MonoBehaviour
 		//Initialize variables.
 		ledState = false;				//LED is off
 		previousState = false;			//LED was off previous iteration
+		dropdownSelected = false;		//No dropdown option has been selected yet.
 
-		getAvailableSerialPorts ();		//Gets string list of available ports on MacOS
-		populateDropdown ();			//Populates the GUI's dropdown based on previous list
-		ledButton.interactable = false;	//Button should not be interacted with unless a port is selected.
+		refreshDropdown ();				//Populate the dropdown with options available at start.
 
 		//Initializes message container.
 		message = new char[2];
@@ -48,6 +48,10 @@ public class ButtonFunctionality : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
+		//Checks if an option from the dropdown has been selected yet and updates the GUI based on selection.
+		if (dropdownSelected) {
+			dropdownOptionSelector ();
+		}
 		//Checks if there has been a change in the state since last iteration.
 		if (previousState != ledState) {
 			//Writes the message out and updates perviousState.
@@ -103,10 +107,12 @@ public class ButtonFunctionality : MonoBehaviour
 	private void getAvailableSerialPorts ()
 	{
 		string[] ports = Directory.GetFiles ("/dev/");
-		availableSerialPorts.Add("Select an available serial port: ");
+		dropdownOptions.Clear ();
+		dropdownOptions.Add("Select an available serial port: ");
+		dropdownOptions.Add ("Refresh List.");
 		foreach (string port in ports) {
 			if (port.StartsWith ("/dev/cu.")) {
-				availableSerialPorts.Add (port);
+				dropdownOptions.Add (port);
 			}
 		}
 	}
@@ -114,6 +120,7 @@ public class ButtonFunctionality : MonoBehaviour
 	//Creates and opens the serial port for communications
 	void openSerialPort ()
 	{
+		
 		//Create the serial port object
 		serialPort = new SerialPort (port, baudRate);
 		//Try to open it and catch any exceptions.
@@ -130,23 +137,48 @@ public class ButtonFunctionality : MonoBehaviour
 
 	//Sets the port name and toggles the button interactibility when a port is chosen.
 	public void dropdownValueChange(){
-		port = availableSerialPorts[dropDown.value];
-		openSerialPort ();
-		ledButton.interactable = true;
-
+		dropdownSelected = true;
 	}
 
-
-
+	//Clears the existing options in the dropdown and populates with the available options.
 	void populateDropdown ()
 	{
-		dropDown.ClearOptions ();
-		if (availableSerialPorts != null && dropDown != null) {
-			dropDown.AddOptions (availableSerialPorts);
+		dropDown.ClearOptions();
+		if (dropdownOptions != null && dropDown != null) {
+			dropDown.AddOptions (dropdownOptions);
 		}
 		else {
-			Debug.LogWarning ("Can't add list.");
+			Debug.LogWarning ("No serial ports available.");
 		}
+	}
+
+	void refreshDropdown ()
+	{
+		//Gets string list of available ports on MacOS
+		getAvailableSerialPorts ();
+		//Populates the GUI's dropdown based on previous list
+		populateDropdown ();
+		//Button should not be interacted with unless a port is selected.
+		ledButton.interactable = false;
+	}
+
+	void dropdownOptionSelector ()
+	{
+		if (dropDown.value == 0) {
+			ledButton.interactable = false;
+			Debug.LogWarning ("Invalid port name.");
+		}
+		else
+			if (dropDown.value == 1) {
+				refreshDropdown ();
+				Debug.Log ("List Refreshed.");
+			}
+			else {
+				port = dropdownOptions [dropDown.value];
+				openSerialPort ();
+				ledButton.interactable = true;
+			}
+		dropdownSelected = false;
 	}
 }
 
