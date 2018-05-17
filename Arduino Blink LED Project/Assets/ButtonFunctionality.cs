@@ -27,6 +27,9 @@ public class ButtonFunctionality : MonoBehaviour
 	public Dropdown dropDown;						//Dropdown from the GUI.
 	public Button ledButton;						//Button from the GUI.
 
+	//Custom color for button, as default green was too bright.
+	private Color triadicGreen = new UnityEngine.Color (0.302F, 0.475F, 0.192F);
+
 
 	// Use this for initialization
 	void Start ()
@@ -87,11 +90,12 @@ public class ButtonFunctionality : MonoBehaviour
 			
 	}
 
+	//Changes the text and color of button based on ledState. Improves user feedback.
 	void buttonTextChange ()
 	{
 		if (ledState) {
 			ledButton.GetComponentInChildren<Text> ().text = "Led On";
-			ledButton.GetComponentInChildren<Text> ().color = UnityEngine.Color.blue;
+			ledButton.GetComponentInChildren<Text> ().color = triadicGreen;
 		}
 		else {
 			ledButton.GetComponentInChildren<Text> ().text = "Led Off";
