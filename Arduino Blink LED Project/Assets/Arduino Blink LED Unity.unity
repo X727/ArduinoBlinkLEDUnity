@@ -936,6 +936,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dropDown: {fileID: 1177380070}
+  ledButton: {fileID: 2004975686}
 --- !u!1 &1177380067
 GameObject:
   m_ObjectHideFlags: 0

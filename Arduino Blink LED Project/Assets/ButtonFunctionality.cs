@@ -15,36 +15,33 @@ using UnityEngine.UI;
 public class ButtonFunctionality : MonoBehaviour
 {
 	//VARIABLE DECLERATIONS
-	private string port;							//For serial port name. Need to add dropdown to choose, rather than hardcode.
+	private bool ledState;							//State of the LED whether on or off.
 	private bool previousState;						//Stores the previous state of the led, to know whether to write the message.
+	private string port;							//For serial port name. Need to add dropdown to choose, rather than hardcode.
 	private const int baudRate = 115200;			//Serial port baud rate.
 	private char sync = Convert.ToChar (0x28);		//Synchronization character to avoid reading noise as a valid message.
 	private char[] message;							//Container for message to send via Serial port.
 	private static SerialPort serialPort;			//Serial port object.
-	List<string> availableSerialPorts = new List<string> ();
-	public Dropdown dropDown;
+	List<string> availableSerialPorts = new List<string> ();//Container for the available serial port names.
+	public Dropdown dropDown;						//Dropdown from the GUI.
+	public Button ledButton;						//Button from the GUI.
+
 
 	// Use this for initialization
 	void Start ()
 	{
 		//Initialize variables.
-		previousState = false;
-		LedState = false;
-		getAvailableSerialPorts ();
+		ledState = false;				//LED is off
+		previousState = false;			//LED was off previous iteration
 
+		getAvailableSerialPorts ();		//Gets string list of available ports on MacOS
+		populateDropdown ();			//Populates the GUI's dropdown based on previous list
+		ledButton.interactable = false;	//Button should not be interacted with unless a port is selected.
 
-		dropDown.ClearOptions ();
-
-		if (availableSerialPorts != null && dropDown != null) {
-			dropDown.AddOptions (availableSerialPorts);
-		}else {
-			Debug.LogWarning ("Can't add list.");
-		}
-
-		port = "Default";		//Set our port. Should come from a drop-down rather than hardcoded.
+		//Initializes message container.
 		message = new char[2];
 		message [0] = sync;		
-		message [1] = boolToChar(LedState);
+		message [1] = boolToChar(ledState);
 
 	}
 
@@ -52,10 +49,10 @@ public class ButtonFunctionality : MonoBehaviour
 	void Update ()
 	{
 		//Checks if there has been a change in the state since last iteration.
-		if (previousState != LedState) {
+		if (previousState != ledState) {
 			//Writes the message out and updates perviousState.
 			writeMessage ();
-			previousState = LedState;
+			previousState = ledState;
 		}
 	}
 
@@ -63,8 +60,8 @@ public class ButtonFunctionality : MonoBehaviour
 	//Changes the ledState and updates the message.
 	public void ButtonClickFunction ()
 	{
-		LedState = !LedState;
-		message [1] = boolToChar(LedState);
+		ledState = !ledState;
+		message [1] = boolToChar(ledState);
 
 	}
 
@@ -84,7 +81,7 @@ public class ButtonFunctionality : MonoBehaviour
 		}
 
 
-		if (LedState) {
+		if (ledState) {
 			Debug.Log ("Button clicked. LED On.");
 		} else {
 			Debug.Log ("Button clicked. LED Off.");
@@ -102,6 +99,7 @@ public class ButtonFunctionality : MonoBehaviour
 		}
 	}
 
+	//Gets the available serial port names on MacOS and writes them to a list.
 	private void getAvailableSerialPorts ()
 	{
 		string[] ports = Directory.GetFiles ("/dev/");
@@ -113,6 +111,7 @@ public class ButtonFunctionality : MonoBehaviour
 		}
 	}
 
+	//Creates and opens the serial port for communications
 	void openSerialPort ()
 	{
 		//Create the serial port object
@@ -129,16 +128,25 @@ public class ButtonFunctionality : MonoBehaviour
 		}
 	}
 
+	//Sets the port name and toggles the button interactibility when a port is chosen.
 	public void dropdownValueChange(){
 		port = availableSerialPorts[dropDown.value];
 		openSerialPort ();
-		
+		ledButton.interactable = true;
+
 	}
 
-	//The led state as a property of the class. 
-	//Written with the intent of further expansion later.
-	//IE: sending this to the button to change the text.
-	public bool LedState { get; private set; }
 
+
+	void populateDropdown ()
+	{
+		dropDown.ClearOptions ();
+		if (availableSerialPorts != null && dropDown != null) {
+			dropDown.AddOptions (availableSerialPorts);
+		}
+		else {
+			Debug.LogWarning ("Can't add list.");
+		}
+	}
 }
 
