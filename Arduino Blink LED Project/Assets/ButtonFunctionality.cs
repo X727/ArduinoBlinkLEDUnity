@@ -56,6 +56,7 @@ public class ButtonFunctionality : MonoBehaviour
 		if (previousState != ledState) {
 			//Writes the message out and updates perviousState.
 			writeMessage ();
+			buttonTextChange ();
 			previousState = ledState;
 		}
 	}
@@ -83,12 +84,18 @@ public class ButtonFunctionality : MonoBehaviour
 		} catch (Exception ex) {
 			Debug.LogError (ex);
 		}
+			
+	}
 
-
+	void buttonTextChange ()
+	{
 		if (ledState) {
-			Debug.Log ("Button clicked. LED On.");
-		} else {
-			Debug.Log ("Button clicked. LED Off.");
+			ledButton.GetComponentInChildren<Text> ().text = "Led On";
+			ledButton.GetComponentInChildren<Text> ().color = UnityEngine.Color.blue;
+		}
+		else {
+			ledButton.GetComponentInChildren<Text> ().text = "Led Off";
+			ledButton.GetComponentInChildren<Text> ().color = UnityEngine.Color.red;
 		}
 	}
 
@@ -188,6 +195,7 @@ public class ButtonFunctionality : MonoBehaviour
 				port = dropdownOptions [dropDown.value];
 				openSerialPort ();
 				ledButton.interactable = true;
+				buttonTextChange ();
 			}
 		dropdownSelected = false;
 	}
